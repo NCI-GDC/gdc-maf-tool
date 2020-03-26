@@ -1,0 +1,4 @@
+requests>=2.22.0,<3
+
+-e git+ssh://git@github.com/uc-cdis/cdislogging.git@0.0.2#egg=cdislogging
+-e git+ssh://git@github.com/NCI-GDC/aliquot-level-maf.git@0.2.0#egg=aliquot_level_maf
