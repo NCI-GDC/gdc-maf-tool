@@ -1,0 +1,7 @@
+-c requirements.txt
+
+httmock>=1.3.0,<2
+pytest>=4.6.6,<5
+pytest-cov>=2.8.1,<3
+mock>=3.0.5,<4
+pytest-threadleak>=0.2.0,<1
