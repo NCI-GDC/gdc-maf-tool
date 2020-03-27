@@ -1,6 +1,6 @@
 import pytest
 
-from gdc_maf_tool import chunk_iterator, ids_from_manifest
+from gdc_maf_tool import gdc_api_client, cli
 
 
 @pytest.mark.parametrize(
@@ -12,11 +12,11 @@ from gdc_maf_tool import chunk_iterator, ids_from_manifest
     ],
 )
 def test_chunk_iterator(given, expected, chunk_size):
-    assert list(chunk_iterator(given, chunk_size)) == expected
+    assert list(gdc_api_client.chunk_iterator(given, chunk_size)) == expected
 
 
 def test_ids_from_manifest(fake_manifest):
     filename, expected_ids = fake_manifest
-    ids = ids_from_manifest(filename)
+    ids = cli.ids_from_manifest(filename)
 
     assert ids == expected_ids

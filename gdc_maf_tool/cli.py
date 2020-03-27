@@ -1,5 +1,7 @@
 import argparse
+import csv
 import io
+from typing import List
 
 from aliquot_level_maf.aggregation import AliquotLevelMaf, aggregate_mafs
 from aliquot_level_maf.selection import (
@@ -8,14 +10,14 @@ from aliquot_level_maf.selection import (
     select_primary_aliquots,
 )
 
-from gdc_maf_tool import download_maf, ids_from_manifest, log_fatal, query_hits
+from gdc_maf_tool import log, gdc_api_client
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="----GDC MAF Concatenation Tool v1.0----",
     )
-    # Must pick a project-id, case-manifest, or file-manifiest
+    # Must pick a project-id, case-manifest, or file-manifest
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument(
         "-p",
@@ -49,6 +51,23 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def ids_from_manifest(manifest_name: str) -> List[str]:
+    """
+    Reads in a GDC Manifest to parse out UUIDs
+    """
+
+    id_list = []
+    with open(manifest_name) as f:
+        id_list = [r["id"] for r in csv.DictReader(f, delimiter="\t") if r.get("id")]
+        if not id_list:
+            log.fatal(
+                "Input must be valid GDC Manifest. For a valid manifest "
+                "visit https://portal.gdc.cancer.gov/"
+            )
+
+    return id_list
+
+
 def main() -> None:
     args = parse_args()
     token = None
@@ -63,12 +82,15 @@ def main() -> None:
     elif args.file_manifest:
         file_ids = ids_from_manifest(args.file_manifest)
 
-    hit_map = {h["case_id"]: h for h in query_hits(args.project_id, file_ids, case_ids)}
+    hit_map = {
+        h["case_id"]: h
+        for h in gdc_api_client.query_hits(args.project_id, file_ids, case_ids)
+    }
 
     # Confirm that there's only one project_id in the list of hits.
     project_ids = {h["project_id"] for h in hit_map.values()}
     if len(project_ids) > 1:
-        log_fatal(
+        log.fatal(
             "Can only have one project id. Project ids included: {}".format(
                 ", ".join(project_ids)
             )
@@ -99,7 +121,7 @@ def main() -> None:
         hit = hit_map[case_id]
         sample_id = hit["samples"][primary_aliquot.sample_id]["aliquot_submitter_id"]
 
-        maf_file_contents = download_maf(
+        maf_file_contents = gdc_api_client.download_maf(
             primary_aliquot.id, md5sum=hit["md5sum"], token=token,
         )
         mafs.append(
@@ -111,7 +133,3 @@ def main() -> None:
 
     with open(args.output_filename, "wb") as f:
         aggregate_mafs(mafs, f)
-
-
-if __name__ == "__main__":
-    main()
