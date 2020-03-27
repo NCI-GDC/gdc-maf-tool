@@ -15,17 +15,19 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="----GDC MAF Concatenation Tool v1.0----",
     )
-    parser.add_argument(
+    # Must pick a project-id, case-manifest, or file-manifiest
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument(
         "-p",
         "--project",
         dest="project_id",
         help="Project from which to gather MAF files.",
     )
 
-    parser.add_argument(
+    group.add_argument(
         "-f", "--file-manifest", help="Specify MAF files with GDC Manifest"
     )
-    parser.add_argument(
+    group.add_argument(
         "-c",
         "--case-manifest",
         help="Specify case ids associated with MAF files with GDC Manifest",
