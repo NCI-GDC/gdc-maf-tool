@@ -1,16 +1,10 @@
 import argparse
 import csv
-import io
 from typing import List
 
-from aliquot_level_maf.aggregation import AliquotLevelMaf, aggregate_mafs
-from aliquot_level_maf.selection import (
-    PrimaryAliquotSelectionCriterion,
-    SampleCriterion,
-    select_primary_aliquots,
-)
+from aliquot_level_maf.aggregation import aggregate_mafs
 
-from gdc_maf_tool import log, gdc_api_client
+from gdc_maf_tool import gdc_api_client, log
 
 
 def parse_args() -> argparse.Namespace:
@@ -73,7 +67,6 @@ def main() -> None:
     token = None
     if args.token:
         token = args.token.read()
-    mafs = []
 
     case_ids = []
     file_ids = []
@@ -82,54 +75,7 @@ def main() -> None:
     elif args.file_manifest:
         file_ids = ids_from_manifest(args.file_manifest)
 
-    hit_map = {
-        h["case_id"]: h
-        for h in gdc_api_client.query_hits(args.project_id, file_ids, case_ids)
-    }
-
-    # Confirm that there's only one project_id in the list of hits.
-    project_ids = {h["project_id"] for h in hit_map.values()}
-    if len(project_ids) > 1:
-        log.fatal(
-            "Can only have one project id. Project ids included: {}".format(
-                ", ".join(project_ids)
-            )
-        )
-
-    # {case_id: PrimaryAliquot(id, sample_id)}
-    criteria = []
-    for hit in hit_map.values():
-        sample_criteria = [
-            SampleCriterion(
-                id=sample["aliquot_submitter_id"], sample_type=sample["sample_type"]
-            )
-            for sample in hit["samples"].values()
-        ]
-
-        criteria.append(
-            PrimaryAliquotSelectionCriterion(
-                id=hit["file_id"],
-                samples=sample_criteria,
-                case_id=hit["case_id"],
-                maf_creation_date=hit["created_datetime"],
-            )
-        )
-
-    selections = select_primary_aliquots(criteria)
-
-    for case_id, primary_aliquot in selections.items():
-        hit = hit_map[case_id]
-        sample_id = hit["samples"][primary_aliquot.sample_id]["aliquot_submitter_id"]
-
-        maf_file_contents = gdc_api_client.download_maf(
-            primary_aliquot.id, md5sum=hit["md5sum"], token=token,
-        )
-        mafs.append(
-            AliquotLevelMaf(
-                file=io.BytesIO(maf_file_contents),
-                tumor_aliquot_submitter_id=sample_id,
-            )
-        )
+    mafs = gdc_api_client.collect_mafs(args.project_id, case_ids, file_ids, token)
 
     with open(args.output_filename, "wb") as f:
         aggregate_mafs(mafs, f)

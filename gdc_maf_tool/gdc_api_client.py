@@ -1,8 +1,15 @@
 import hashlib
+import io
 import json
-from typing import List, Any, Dict, Iterator
+from typing import Any, Dict, Iterator, List
 
 import requests
+from aliquot_level_maf.aggregation import AliquotLevelMaf
+from aliquot_level_maf.selection import (
+    PrimaryAliquotSelectionCriterion,
+    SampleCriterion,
+    select_primary_aliquots,
+)
 
 from gdc_maf_tool import log
 from gdc_maf_tool.log import logger
@@ -144,8 +151,7 @@ def download_maf(uuid: str, md5sum: str, token: str = None, retry_amount: int = 
     else:
         log.fatal("Maximum retries exceeded")
 
-    if not check_md5sum(resp.content, md5sum):
-        log.fatal("md5sum not matching expected value for {}".format(uuid))
+    if not check_md5sum(resp.content, md5sum): log.fatal("md5sum not matching expected value for {}".format(uuid))
     else:
         return resp.content
 
@@ -166,3 +172,73 @@ def check_md5sum(contents: bytes, expected_md5: str, chunk_size: int = 4096) -> 
         hash_md5.update(chunk)
 
     return expected_md5 == hash_md5.hexdigest()
+
+
+def only_one_project_id(hit_map: Dict) -> None:
+    """ Confirm that there's only one project_id in the list of hits."""
+    project_ids = {h["project_id"] for h in hit_map.values()}
+    if len(project_ids) > 1:
+        log.fatal(
+            "Can only have one project id. Project ids included: {}".format(
+                ", ".join(project_ids)
+            )
+        )
+
+
+
+def collect_criteria(hit_map: Dict) -> List[PrimaryAliquotSelectionCriterion]:
+    criteria = []
+    for hit in hit_map.values():
+        sample_criteria = [
+            SampleCriterion(
+                id=sample["aliquot_submitter_id"], sample_type=sample["sample_type"]
+            )
+            for sample in hit["samples"].values()
+        ]
+
+        criteria.append(
+            PrimaryAliquotSelectionCriterion(
+                id=hit["file_id"],
+                samples=sample_criteria,
+                case_id=hit["case_id"],
+                maf_creation_date=hit["created_datetime"],
+            )
+        )
+    return criteria
+
+
+def collect_mafs(
+    project_id: str, case_ids: List[str], file_ids: List[str], token: str
+) -> List[AliquotLevelMaf]:
+    """Put together a list of mafs given one of the following: project_id, case_ids, file_ids.
+
+    - If a list of ids is provided then ensure that those ids share the same project_id.
+    - If case_ids then gather all the mafs related to those cases.
+    - If file_ids then gather all the mafs of those file_ids.
+    - If a project_id is provided then gather all the aliquot level mafs for that project.
+    """
+
+    mafs = []
+    hit_map = {h["case_id"]: h for h in query_hits(project_id, file_ids, case_ids)}
+
+    only_one_project_id(hit_map)
+
+    criteria = collect_criteria(hit_map)
+    selections = select_primary_aliquots(criteria)
+
+    for case_id, primary_aliquot in selections.items():
+        hit = hit_map[case_id]
+        sample_id = hit["samples"][primary_aliquot.sample_id]["aliquot_submitter_id"]
+
+        # TODO: Replace with delayed download solution
+        maf_file_contents = download_maf(
+            primary_aliquot.id, md5sum=hit["md5sum"], token=token,
+        )
+        mafs.append(
+            AliquotLevelMaf(
+                file=io.BytesIO(maf_file_contents),
+                tumor_aliquot_submitter_id=sample_id,
+            )
+        )
+    # TODO: Return list of delayed download maf objects
+    return mafs
