@@ -11,7 +11,7 @@ from aliquot_level_maf.selection import (
     select_primary_aliquots,
 )
 
-from gdc_maf_tool import log
+from gdc_maf_tool import log, defer
 from gdc_maf_tool.log import logger
 
 
@@ -125,53 +125,24 @@ def _parse_hit(hit: Dict) -> Dict:
     }
 
 
-def download_maf(uuid: str, md5sum: str, token: str = None, retry_amount: int = 3):
+def download_maf(
+    uuid: str, md5sum: str, token: str = None
+) -> defer.DeferredRequestReader:
     """
     Downloads each MAF file and returns the resulting bytes of response content.
 
     Verify that the MD5 matches the maf metadata.
     """
-    headers = {}
-    if token:
-        headers = {"X-Auth-Token": token}
 
-    for _ in range(retry_amount):
-        # progress bar?
+    def provider() -> requests.Response:
+        headers = {}
+        if token:
+            headers = {"X-Auth-Token": token}
+
         logger.info("Downloading File: %s ", uuid)
-        resp = requests.get(
-            "https://api.gdc.cancer.gov/data/{}".format(uuid), headers=headers,
-        )
-        if resp.status_code == 200:
-            break
-        if resp.status_code == 403:
-            logger.warning("You do not have access to %s", uuid)
-            continue
-        logger.info("Retrying Download...")
+        return requests.get(f"https://api.gdc.cancer.gov/data/{uuid}", headers=headers,)
 
-    else:
-        log.fatal("Maximum retries exceeded")
-
-    if not check_md5sum(resp.content, md5sum): log.fatal("md5sum not matching expected value for {}".format(uuid))
-    else:
-        return resp.content
-
-    return ""
-
-
-def chunk_iterator(iterator: Any, size: int = 4096) -> Iterator:
-    for i in range(0, len(iterator), size):
-        yield iterator[i : i + size]
-
-
-def check_md5sum(contents: bytes, expected_md5: str, chunk_size: int = 4096) -> bool:
-    """
-    Checks the MD5SUM matches the one in the GDC index
-    """
-    hash_md5 = hashlib.md5()
-    for chunk in chunk_iterator(contents, size=chunk_size):
-        hash_md5.update(chunk)
-
-    return expected_md5 == hash_md5.hexdigest()
+    return defer.DeferredRequestReader(provider, md5sum)
 
 
 def only_one_project_id(hit_map: Dict) -> None:
@@ -236,7 +207,7 @@ def collect_mafs(
         )
         mafs.append(
             AliquotLevelMaf(
-                file=io.BytesIO(maf_file_contents),
+                file=maf_file_contents,
                 tumor_aliquot_submitter_id=sample_id,
             )
         )
