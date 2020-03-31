@@ -62,3 +62,14 @@ Testing
 ```shell
 $ tox
 ```
+
+Contributing
+---
+
+We use `pre-commit` to enforce formatting and linting.  It needs to be installed 
+in your local copy of this repo.
+
+```shell script
+pip install -r dev-requirements.txt
+pre-commit install
+```

@@ -1,7 +1,5 @@
-import hashlib
-import io
 import json
-from typing import Any, Dict, Iterator, List
+from typing import Any, Dict, List
 
 import requests
 from aliquot_level_maf.aggregation import AliquotLevelMaf
@@ -23,7 +21,8 @@ def query_hits(
     """
 
     # All queries start out as filtering on a MAF file that's a Masked Somatic Mutation.
-    # Adding the analysis.workflow_type filter will ensure we don't get extra mafs we don't want
+    # Adding the analysis.workflow_type filter will ensure we don't get extra mafs we
+    # don't want
     base_content = [
         {"op": "in", "content": {"field": "files.data_format", "value": ["MAF"]}},
         {
@@ -156,7 +155,6 @@ def only_one_project_id(hit_map: Dict) -> None:
         )
 
 
-
 def collect_criteria(hit_map: Dict) -> List[PrimaryAliquotSelectionCriterion]:
     criteria = []
     for hit in hit_map.values():
@@ -181,12 +179,13 @@ def collect_criteria(hit_map: Dict) -> List[PrimaryAliquotSelectionCriterion]:
 def collect_mafs(
     project_id: str, case_ids: List[str], file_ids: List[str], token: str
 ) -> List[AliquotLevelMaf]:
-    """Put together a list of mafs given one of the following: project_id, case_ids, file_ids.
+    """Put together a list of mafs given one of: project_id, case_ids, file_ids.
 
     - If a list of ids is provided then ensure that those ids share the same project_id.
     - If case_ids then gather all the mafs related to those cases.
     - If file_ids then gather all the mafs of those file_ids.
-    - If a project_id is provided then gather all the aliquot level mafs for that project.
+    - If a project_id is provided then gather all the aliquot level mafs for that
+    project.
     """
 
     mafs = []
@@ -207,8 +206,7 @@ def collect_mafs(
         )
         mafs.append(
             AliquotLevelMaf(
-                file=maf_file_contents,
-                tumor_aliquot_submitter_id=sample_id,
+                file=maf_file_contents, tumor_aliquot_submitter_id=sample_id,
             )
         )
     # TODO: Return list of delayed download maf objects
