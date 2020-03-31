@@ -40,7 +40,7 @@ class DeferredRequestReader(io.BufferedIOBase):
         if not self._md5sum:
             return
 
-        hash_md5 = hashlib.md5()
+        hash_md5 = hashlib.md5()  # nosec
         hash_md5.update(content)
         md5 = hash_md5.hexdigest()
         if self._md5sum != md5:
