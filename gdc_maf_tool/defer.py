@@ -30,21 +30,24 @@ class DeferredRequestReader(io.BufferedIOBase):
 
         response = self._provider()
         response.raise_for_status()
-        self._validate_checksum(response.content)
+        self._validate_checksum(response)
 
         self._content_position = 0
         self._content_length = len(response.content)
         self._response = response
 
-    def _validate_checksum(self, content):
+    def _validate_checksum(self, response):
         if not self._md5sum:
             return
 
         hash_md5 = hashlib.md5()  # nosec
-        hash_md5.update(content)
+        hash_md5.update(response.content)
         md5 = hash_md5.hexdigest()
         if self._md5sum != md5:
-            raise ValueError(f"Failed checksum. Expected {self._md5sum}.  Got {md5}.")
+            raise ValueError(
+                f"Failed checksum for {response.url}. "
+                f"Expected {self._md5sum}. Got {md5}."
+            )
 
     @property
     def response(self) -> requests.Response:
