@@ -9,7 +9,7 @@ from aliquot_level_maf.selection import (
     select_primary_aliquots,
 )
 
-from gdc_maf_tool import log, defer
+from gdc_maf_tool import defer, log
 from gdc_maf_tool.log import logger
 
 
@@ -193,7 +193,7 @@ def collect_mafs(
 
 
 def _build_hit_map(hits):
-    return {h["case_id"]: h for h in hits}
+    return {h["file_id"]: h for h in hits}
 
 
 def _select_mafs(hit_map, token):
@@ -203,8 +203,8 @@ def _select_mafs(hit_map, token):
     criteria = collect_criteria(hit_map)
     selections = select_primary_aliquots(criteria)
 
-    for case_id, primary_aliquot in selections.items():
-        hit = hit_map[case_id]
+    for primary_aliquot in selections.values():
+        hit = hit_map[primary_aliquot.id]
         sample_id = hit["samples"][primary_aliquot.sample_id]["aliquot_submitter_id"]
 
         # TODO: Replace with delayed download solution
