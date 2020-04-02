@@ -39,7 +39,7 @@ def parse_args() -> argparse.Namespace:
         "-o",
         "--output",
         dest="output_filename",
-        default="outfile.gz",
+        default="outfile.maf.gz",
         help="Output file name for the resulting aggregate MAF.",
     )
     return parser.parse_args()

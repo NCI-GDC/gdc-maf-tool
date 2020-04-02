@@ -53,7 +53,7 @@ $ # Downloading controlled access data (that you have access to)
 $ gdc-maf-tool --project EXAMPLE-PROJECT --token my-token.txt
 
 $ # Choosing the resulting name gzipped name of your download
-$ gdc-maf-tool --project EXAMPLE-PROJECT --output my-maf.gz
+$ gdc-maf-tool --project EXAMPLE-PROJECT --output my-maf.maf.gz
 ```
 
 Testing
