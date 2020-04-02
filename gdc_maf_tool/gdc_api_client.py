@@ -188,9 +188,16 @@ def collect_mafs(
     project.
     """
 
-    mafs = []
-    hit_map = {h["case_id"]: h for h in query_hits(project_id, file_ids, case_ids)}
+    hit_map = _build_hit_map(query_hits(project_id, file_ids, case_ids))
+    return _select_mafs(hit_map, token)
 
+
+def _build_hit_map(hits):
+    return {h["case_id"]: h for h in hits}
+
+
+def _select_mafs(hit_map, token):
+    mafs = []
     only_one_project_id(hit_map)
 
     criteria = collect_criteria(hit_map)
