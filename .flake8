@@ -1,7 +1,0 @@
-[flake8]
-exclude =
-	.git
-	.idea
-	.tox
-	venv
-max-line-length = 88
