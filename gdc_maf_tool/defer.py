@@ -4,6 +4,8 @@ from typing import Callable, Optional
 
 import requests
 
+from gdc_maf_tool.log import logger
+
 ResponseProvider = Callable[[], requests.Response]
 
 
@@ -15,7 +17,11 @@ class DeferredRequestReader(io.BufferedIOBase):
         md5sum: An optional md5 digest in hex format.
     """
 
-    def __init__(self, provider: ResponseProvider, md5sum: Optional[str] = None):
+    def __init__(
+        self, provider: ResponseProvider, uuid: str, md5sum: Optional[str] = None
+    ):
+        self.uuid = uuid
+        self.failed_reason = None
         self._provider = provider
         self._md5sum = md5sum
 
@@ -29,7 +35,23 @@ class DeferredRequestReader(io.BufferedIOBase):
             return
 
         response = self._provider()
-        response.raise_for_status()
+        if response.status_code == 403:
+            logger.warn("[403] Unable to downoad %s. Skipping...", self.uuid)
+            self.failed_reason = "Not authorized"
+            return
+
+        if response.status_code == 404:
+            logger.warn("[404] File not found %s. Skipping...", self.uuid)
+            self.failed_reason = "File not found"
+            return
+
+        if response.status_code != 200:
+            logger.warn(
+                "[%s] Uncaught error %s. Skipping...", response.status_code, self.uuid
+            )
+            self.failed_reason = "Uncaught error code: {}".format(response.status_code)
+            return
+
         self._validate_checksum(response)
 
         self._content_position = 0
@@ -50,7 +72,7 @@ class DeferredRequestReader(io.BufferedIOBase):
             )
 
     @property
-    def response(self) -> requests.Response:
+    def response(self) -> Optional[requests.Response]:
         self._realize()
         return self._response
 
@@ -60,6 +82,9 @@ class DeferredRequestReader(io.BufferedIOBase):
     def read(self, size=-1):
         """Read from the response."""
         self._realize()
+
+        if not self._response:
+            return b""
 
         if self._content_position >= self._content_length:
             return b""
