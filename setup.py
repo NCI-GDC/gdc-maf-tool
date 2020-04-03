@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="gdc-maf-tool",
-    version="0.0.1",
+    version="0.0.2",
     description="GDC MAF Tool",
     license="Apache",
     packages=find_packages(),

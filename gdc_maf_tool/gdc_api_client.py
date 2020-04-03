@@ -1,3 +1,4 @@
+import datetime
 import json
 from typing import Any, Dict, List
 
@@ -203,18 +204,52 @@ def _select_mafs(hit_map, token):
     criteria = collect_criteria(hit_map)
     selections = select_primary_aliquots(criteria)
 
+    failed_uuids = []
     for primary_aliquot in selections.values():
         hit = hit_map[primary_aliquot.id]
         sample_id = hit["samples"][primary_aliquot.sample_id]["aliquot_submitter_id"]
 
-        # TODO: Replace with delayed download solution
-        maf_file_contents = download_maf(
-            primary_aliquot.id, md5sum=hit["md5sum"], token=token,
-        )
-        mafs.append(
-            AliquotLevelMaf(
-                file=maf_file_contents, tumor_aliquot_submitter_id=sample_id,
+        if can_download_maf(primary_aliquot.id, token):
+            maf_file_contents = download_maf(
+                primary_aliquot.id, md5sum=hit["md5sum"], token=token,
             )
+            mafs.append(
+                AliquotLevelMaf(
+                    file=maf_file_contents, tumor_aliquot_submitter_id=sample_id,
+                )
+            )
+        else:
+            failed_uuids.append(primary_aliquot.id)
+
+    if failed_uuids:
+        logger.warning(
+            "You do not have access to these uuids. "
+            "They will not be downloaded or included in the output MAF file."
         )
-    # TODO: Return list of delayed download maf objects
+        logger.warning(", ".join(failed_uuids))
+        date = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = "failed-downloads-{}.tsv".format(date)
+        logger.warning("Writing failed download ids to file: %s", filename)
+
+        with open(filename, "w") as f:
+            f.write("id\n")
+            f.write("\n".join(failed_uuids))
+
     return mafs
+
+
+def can_download_maf(node_id: str, token: str) -> bool:
+    """Start a download to see if a user has access to a file"""
+
+    headers = {
+        "X-Auth-Token": token,
+        "Range": "bytes=0-1",
+    }
+    resp = requests.get(
+        f"https://api.gdc.cancer.gov/data/{node_id}", headers=headers, stream=True
+    )
+    resp.close()
+    if resp.status_code == 403:
+        logger.warning("You do not have access to this file: %s, skipping.", node_id)
+        return False
+    return True
