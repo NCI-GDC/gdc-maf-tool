@@ -1,4 +1,11 @@
-from gdc_maf_tool.gdc_api_client import _select_mafs, _build_hit_map, _parse_hit
+from httmock import HTTMock
+from tests import mocks
+
+from gdc_maf_tool.gdc_api_client import (
+    _build_hit_map,
+    _parse_hit,
+    _select_mafs,
+)
 
 
 def test__select_mafs():
@@ -116,7 +123,9 @@ def test__select_mafs():
             },
         },
     }
-    mafs = _select_mafs(
-        _build_hit_map([_parse_hit(hit) for hit in results["data"]["hits"]]), None
-    )
+    with HTTMock(mocks.download_mock):
+        mafs = _select_mafs(
+            _build_hit_map([_parse_hit(hit) for hit in results["data"]["hits"]]),
+            mocks.VALID_TOKEN,
+        )
     assert mafs[0].tumor_aliquot_submitter_id == "TARGET-20-PANLRE-09A-01D"
