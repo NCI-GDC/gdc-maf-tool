@@ -14,7 +14,10 @@ Ensemble aliquot-level MAFs can be queried at the GDC Data Portal (https://porta
 Alternatively, this data set can be accessed at the following link:
 https://portal.gdc.cancer.gov/repository?filters=%7B%22op%22%3A%22and%22%2C%22content%22%3A%5B%7B%22op%22%3A%22in%22%2C%22content%22%3A%7B%22field%22%3A%22files.analysis.workflow_type%22%2C%22value%22%3A%5B%22Aliquot+Ensemble+Somatic+Variant+Merging+and+Masking%22%5D%7D%7D%2C%7B%22op%22%3A%22in%22%2C%22content%22%3A%7B%22field%22%3A%22files.data_format%22%2C%22value%22%3A%5B%22maf%22%5D%7D%7D%5D%7D
 
-To pass a set of files to this tool, query the desired files and download a GDC Manifest.
+To pass a set of files to this tool, query the desired files and download a GDC Manifest. This can be done by doing any of the following:
+
+- Adding all required files to the cart, going to the cart, and choosing "Download" --> "Manifest"
+- Choosing the "Manifest" button in the repository itself at the top of the list of files. 
 
 ### Querying for Cases
 
@@ -24,7 +27,7 @@ This tool can also aggregate the MAF files specified above for a custom set of c
 1.  Filter for a set of desired cases using the faceted search.
 1.  Choose "Save/Edit Case Set" --> "Save as new case set"
 1.  Once the set is saved, go to "Manage Sets" at the top of the Portal
-1.  Choose "Export TSV" icon for the desired set. This should download a list of case UUIDs. 
+1.  Choose "Export TSV" icon for the desired set. This should download a list of case UUIDs.
 
 
 Installing
@@ -63,7 +66,7 @@ optional arguments:
   -t TOKEN, --token TOKEN
                         GDC user token required for controlled access data
   -o OUTPUT_FILENAME, --output OUTPUT_FILENAME
-                        Output file name for the resulting aggregate MAF (default: output.gz).
+                        Output file name for the resulting aggregate MAF (default: outfile.maf.gz).
 
 $ # Downloading files from a project
 $ gdc-maf-tool --project EXAMPLE-PROJECT
