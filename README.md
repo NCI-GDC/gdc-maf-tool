@@ -2,6 +2,34 @@
 
 ## Aggregate GDC MAFs into one MAF file.
 
+The GDC MAF tool aggregates aliquot-level MAFs, which originate from one tumor-normal pair.  MAFs can aggregated on a project-level or by providing a set of files/cases. Note that currently the GDC MAF tool only supports Ensemble aliquot-level MAFs generated from whole exome sequencing.  Ensemble aliquot-level MAFs include variants from all five variant callers (MuTect2, MuSE, Varscan2, SomaticSniper, Pindel) and include information about which caller each variant originated from. The GDC MAF tool will only aggregate MAFs from within one GDC project.
+
+### Querying for MAFs
+
+Ensemble aliquot-level MAFs can be queried at the GDC Data Portal (https://portal.gdc.cancer.gov/repository) using the following filters along with the project of your choice:
+
+* Data Format: maf
+* Workflow Type: Aliquot Ensemble Somatic Variant Merging and Masking
+
+Alternatively, this data set can be accessed at the following link:
+https://portal.gdc.cancer.gov/repository?filters=%7B%22op%22%3A%22and%22%2C%22content%22%3A%5B%7B%22op%22%3A%22in%22%2C%22content%22%3A%7B%22field%22%3A%22files.analysis.workflow_type%22%2C%22value%22%3A%5B%22Aliquot+Ensemble+Somatic+Variant+Merging+and+Masking%22%5D%7D%7D%2C%7B%22op%22%3A%22in%22%2C%22content%22%3A%7B%22field%22%3A%22files.data_format%22%2C%22value%22%3A%5B%22maf%22%5D%7D%7D%5D%7D
+
+To pass a set of files to this tool, query the desired files and download a GDC Manifest. This can be done by doing any of the following:
+
+- Adding all required files to the cart, going to the cart, and choosing "Download" --> "Manifest"
+- Choosing the "Manifest" button in the repository itself at the top of the list of files. 
+
+### Querying for Cases
+
+This tool can also aggregate the MAF files specified above for a custom set of cases from the GDC.  A list of cases can be retrieved from the GDC Data Portal by performing the following steps:
+
+1.  Go to the GDC Exploration page: https://portal.gdc.cancer.gov/exploration
+1.  Filter for a set of desired cases using the faceted search.
+1.  Choose "Save/Edit Case Set" --> "Save as new case set"
+1.  Once the set is saved, go to "Manage Sets" at the top of the Portal
+1.  Choose "Export TSV" icon for the desired set. This should download a list of case UUIDs.
+
+
 Installing
 ---
 
@@ -38,7 +66,7 @@ optional arguments:
   -t TOKEN, --token TOKEN
                         GDC user token required for controlled access data
   -o OUTPUT_FILENAME, --output OUTPUT_FILENAME
-                        Output file name for the resulting aggregate MAF.
+                        Output file name for the resulting aggregate MAF (default: outfile.maf.gz).
 
 $ # Downloading files from a project
 $ gdc-maf-tool --project EXAMPLE-PROJECT
@@ -66,7 +94,7 @@ $ tox
 Contributing
 ---
 
-We use `pre-commit` to enforce formatting and linting.  It needs to be installed 
+We use `pre-commit` to enforce formatting and linting.  It needs to be installed
 in your local copy of this repo.
 
 ```shell script
