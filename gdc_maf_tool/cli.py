@@ -99,3 +99,7 @@ def main() -> None:
         logger.info("Successfully downloaded %s files", len(mafs) - len(failed))
         if failed:
             logger.info("Failed to download %s files", len(failed))
+
+
+if __name__ == "__main__":
+    main()
