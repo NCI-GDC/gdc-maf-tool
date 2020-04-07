@@ -33,11 +33,25 @@ This tool can also aggregate the MAF files specified above for a custom set of c
 Installing
 ---
 
-Requires Python 3.6 or later
+Requires Git and Python 3.6 or later.
 
+#### Clone the repo:
 ```shell
-$ virtualenv venv
+$ git clone https://github.com/NCI-GDC/gdc-maf-tool.git
+```
+#### Create a virtualenv:
+For Linux and Macos:
+```shell
+$ python3 -m venv venv
 $ source venv/bin/activate
+```
+For windows:
+```shell
+$ py -m venv venv
+$ .\venv\Scripts\activate
+```
+#### Install the tool in the virtualenv:
+```shell
 $ pip install -r requirements.txt
 $ python setup.py install
 ```
