@@ -18,9 +18,14 @@ class DeferredRequestReader(io.BufferedIOBase):
     """
 
     def __init__(
-        self, provider: ResponseProvider, uuid: str, md5sum: Optional[str] = None
+        self,
+        provider: ResponseProvider,
+        case_id: str,
+        uuid: str,
+        md5sum: Optional[str] = None,
     ):
         self.uuid = uuid
+        self.case_id = case_id
         self.failed_reason = None
         self._provider = provider
         self._md5sum = md5sum
