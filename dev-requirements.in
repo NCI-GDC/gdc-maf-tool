@@ -9,3 +9,4 @@ pytest-threadleak>=0.2.0,<1
 pre-commit>=2.2.0,<3
 bandit>=1.6.2,<2
 black>=19.10b0,<20
+freezegun>=0.3.14,<1

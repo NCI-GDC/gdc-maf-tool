@@ -63,10 +63,10 @@ Usage
 
 $ gdc-maf-tool --help
 
-usage: gdc-maf-tool [-h] [-p PROJECT_ID] [-f FILE_MANIFEST] [-c CASE_MANIFEST]
+usage: gdc-maf-tool [-h] (-p PROJECT_ID | -f FILE_MANIFEST | -c CASE_MANIFEST)
                     [-t TOKEN] [-o OUTPUT_FILENAME]
 
-----GDC MAF Concatenation Tool v1.0----
+----GDC MAF Concatenation Tool v0.0.3----
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -80,7 +80,8 @@ optional arguments:
   -t TOKEN, --token TOKEN
                         GDC user token required for controlled access data
   -o OUTPUT_FILENAME, --output OUTPUT_FILENAME
-                        Output file name for the resulting aggregate MAF (default: outfile.maf.gz).
+                        Output file name for the resulting aggregate MAF
+                        (default: outfile.maf.gz).
 
 $ # Downloading files from a project
 $ gdc-maf-tool --project EXAMPLE-PROJECT
