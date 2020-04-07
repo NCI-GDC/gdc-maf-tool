@@ -81,24 +81,23 @@ def main() -> None:
     with open(args.output_filename, "wb") as f:
         aggregate_mafs(mafs, f)
 
-        failed = {
-            m.file.uuid: m.file.failed_reason for m in mafs if m.file.failed_reason
+    failed_downloads = [
+        {
+            "case_id": m.file.case_id,
+            "file_id": m.file.uuid,
+            "reason": m.file.failed_reason,
         }
-        if failed:
-            logger.warning(
-                "The following uuids will not be downloaded or included in the output MAF file."
-            )
-            logger.warning(", ".join(failed.keys()))
-            gdc_api_client.write_failed_download_manifest(
-                fieldnames=["file_id", "reason"],
-                failed_list=[
-                    {"file_id": uuid, "reason": reason}
-                    for uuid, reason in failed.items()
-                ],
-            )
-        logger.info("Successfully downloaded %s files", len(mafs) - len(failed))
-        if failed:
-            logger.info("Failed to download %s files", len(failed))
+        for m in mafs
+        if m.file.failed_reason
+    ]
+    if failed_downloads:
+        logger.warning(
+            "There are %d failed downloads. Please check %s for details",
+            len(failed_downloads),
+            gdc_api_client.FAILED_DOWNLOAD_FILENAME,
+        )
+        gdc_api_client.write_failed_download_manifest(failed_list=failed_downloads)
+    logger.info("Successfully downloaded %s files", len(mafs) - len(failed_downloads))
 
 
 if __name__ == "__main__":

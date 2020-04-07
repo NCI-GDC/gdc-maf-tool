@@ -132,3 +132,4 @@ dmypy.json
 *.swp
 
 *.tsv
+*.maf.gz
