@@ -1,6 +1,6 @@
 # gdc-maf-tool
 
-## Aggregate GDC MAFs into one MAF file.
+## Aggregate GDC MAFs into one MAF file
 
 The GDC MAF tool aggregates aliquot-level MAFs, which originate from one tumor-normal pair.  MAFs can aggregated on a project-level or by providing a set of files/cases. Note that currently the GDC MAF tool only supports Ensemble aliquot-level MAFs generated from whole exome sequencing.  Ensemble aliquot-level MAFs include variants from all five variant callers (MuTect2, MuSE, Varscan2, SomaticSniper, Pindel) and include information about which caller each variant originated from. The GDC MAF tool will only aggregate MAFs from within one GDC project.
 
@@ -45,7 +45,7 @@ For Linux and Macos:
 $ python3 -m venv venv
 $ source venv/bin/activate
 ```
-For windows:
+For Windows:
 ```shell
 $ py -m venv venv
 $ .\venv\Scripts\activate
