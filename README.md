@@ -30,6 +30,9 @@ This tool can also aggregate the MAF files specified above for a custom set of c
 1.  Once the set is saved, go to "Manage Sets" at the top of the Portal
 1.  Choose "Export TSV" icon for the desired set. This should download a list of case UUIDs.
 
+### Known Issues
+*  Some aliquots that were included in the manifest, may not be downloaded because of valid errors. These aliquot ids are still included in the list of aliquots in the header of the aggregated MAF file. The generated log file includes details about which aliquots were not included in the aggregated MAF.
+
 
 Installing
 ---
