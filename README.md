@@ -17,6 +17,7 @@ Alternatively, this data set can be accessed by following [this link](https://po
 
 To pass a set of files to this tool, query the desired files and download a GDC Manifest. This can be done by doing any of the following:
 
+- Selecting a project from case facet
 - Adding all required files to the cart, going to the cart, and choosing "Download" --> "Manifest"
 - Choosing the "Manifest" button in the repository itself at the top of the list of files.
 
@@ -40,22 +41,22 @@ Installing
 Requires Git and Python 3.6 or later.
 
 #### Clone the repo:
-```shell
+```
 $ git clone https://github.com/NCI-GDC/gdc-maf-tool.git
 ```
 #### Create a virtualenv:
-For Linux and Macos:
-```shell
+For Linux and macOS:
+```
 $ python3 -m venv venv
 $ source venv/bin/activate
 ```
 For Windows:
-```shell
+```
 $ py -m venv venv
 $ .\venv\Scripts\activate
 ```
 #### Install the tool in the virtualenv:
-```shell
+```
 $ pip install -r requirements.txt
 $ python setup.py install
 ```
@@ -63,7 +64,7 @@ $ python setup.py install
 Usage
 ---
 
-```shell
+```
 
 $ gdc-maf-tool --help
 
@@ -106,7 +107,7 @@ $ gdc-maf-tool --project EXAMPLE-PROJECT --output my-maf.maf.gz
 Testing
 ---
 
-```shell
+```
 $ tox
 ```
 
@@ -116,7 +117,7 @@ Contributing
 We use `pre-commit` to enforce formatting and linting.  It needs to be installed
 in your local copy of this repo.
 
-```shell script
+```
 pip install -r dev-requirements.txt
 pre-commit install
 ```
