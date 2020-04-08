@@ -12,12 +12,12 @@ Ensemble aliquot-level MAFs can be queried at the GDC Data Portal (https://porta
 * Data Type: Masked Somatic Mutation
 * Workflow Type: Aliquot Ensemble Somatic Variant Merging and Masking
 * Data Format: maf
+* Select a project from case facet
 
-Alternatively, this data set can be accessed by following [this link](https://portal.gdc.cancer.gov/repository?facetTab=files&filters=%7B%22op%22%3A%22and%22%2C%22content%22%3A%5B%7B%22op%22%3A%22in%22%2C%22content%22%3A%7B%22field%22%3A%22files.analysis.workflow_type%22%2C%22value%22%3A%5B%22Aliquot+Ensemble+Somatic+Variant+Merging+and+Masking%22%5D%7D%7D%2C%7B%22op%22%3A%22in%22%2C%22content%22%3A%7B%22field%22%3A%22files.data_format%22%2C%22value%22%3A%5B%22maf%22%5D%7D%7D%2C%7B%22op%22%3A%22in%22%2C%22content%22%3A%7B%22field%22%3A%22files.data_type%22%2C%22value%22%3A%5B%22Masked+Somatic+Mutation%22%5D%7D%7D%5D%7D).
+Alternatively, this data set (for all projects) can be accessed by following [this link](https://portal.gdc.cancer.gov/repository?facetTab=files&filters=%7B%22op%22%3A%22and%22%2C%22content%22%3A%5B%7B%22op%22%3A%22in%22%2C%22content%22%3A%7B%22field%22%3A%22files.analysis.workflow_type%22%2C%22value%22%3A%5B%22Aliquot+Ensemble+Somatic+Variant+Merging+and+Masking%22%5D%7D%7D%2C%7B%22op%22%3A%22in%22%2C%22content%22%3A%7B%22field%22%3A%22files.data_format%22%2C%22value%22%3A%5B%22maf%22%5D%7D%7D%2C%7B%22op%22%3A%22in%22%2C%22content%22%3A%7B%22field%22%3A%22files.data_type%22%2C%22value%22%3A%5B%22Masked+Somatic+Mutation%22%5D%7D%7D%5D%7D).
 
 To pass a set of files to this tool, query the desired files and download a GDC Manifest. This can be done by doing any of the following:
 
-- Selecting a project from case facet
 - Adding all required files to the cart, going to the cart, and choosing "Download" --> "Manifest"
 - Choosing the "Manifest" button in the repository itself at the top of the list of files.
 
