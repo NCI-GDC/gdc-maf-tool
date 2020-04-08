@@ -1,5 +1,7 @@
+import datetime
 import json
-from typing import Any, Dict, List
+import os
+from typing import Any, Dict, List, Optional
 
 import requests
 from aliquot_level_maf.aggregation import AliquotLevelMaf
@@ -8,9 +10,13 @@ from aliquot_level_maf.selection import (
     SampleCriterion,
     select_primary_aliquots,
 )
+from defusedcsv import csv
 
-from gdc_maf_tool import log, defer
+from gdc_maf_tool import defer, log
 from gdc_maf_tool.log import logger
+
+date = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+FAILED_DOWNLOAD_FILENAME = "failed-downloads-{}.tsv".format(date)
 
 
 def query_hits(
@@ -84,6 +90,7 @@ def query_hits(
         "from": "0",
         "size": str(page_size),
     }
+    logger.info("Gathering metadata...")
     data = _files_query(query)
     hits = [_parse_hit(hit) for hit in data["hits"]]
 
@@ -93,6 +100,7 @@ def query_hits(
         data = _files_query(query)
         hits += [_parse_hit(hit) for hit in data["hits"]]
 
+    logger.info("Done gathering metadata")
     return hits
 
 
@@ -125,7 +133,7 @@ def _parse_hit(hit: Dict) -> Dict:
 
 
 def download_maf(
-    uuid: str, md5sum: str, token: str = None
+    case_id: str, uuid: str, md5sum: str, token: str = None
 ) -> defer.DeferredRequestReader:
     """
     Downloads each MAF file and returns the resulting bytes of response content.
@@ -133,7 +141,7 @@ def download_maf(
     Verify that the MD5 matches the maf metadata.
     """
 
-    def provider() -> requests.Response:
+    def provider() -> Optional[requests.Response]:
         headers = {}
         if token:
             headers = {"X-Auth-Token": token}
@@ -141,7 +149,7 @@ def download_maf(
         logger.info("Downloading File: %s ", uuid)
         return requests.get(f"https://api.gdc.cancer.gov/data/{uuid}", headers=headers,)
 
-    return defer.DeferredRequestReader(provider, md5sum)
+    return defer.DeferredRequestReader(provider, case_id, uuid, md5sum)
 
 
 def only_one_project_id(hit_map: Dict) -> None:
@@ -177,7 +185,7 @@ def collect_criteria(hit_map: Dict) -> List[PrimaryAliquotSelectionCriterion]:
 
 
 def collect_mafs(
-    project_id: str, case_ids: List[str], file_ids: List[str], token: str
+    project_id: str, case_ids: List[str], file_ids: List[str], token: Optional[str]
 ) -> List[AliquotLevelMaf]:
     """Put together a list of mafs given one of: project_id, case_ids, file_ids.
 
@@ -188,26 +196,81 @@ def collect_mafs(
     project.
     """
 
-    mafs = []
-    hit_map = {h["case_id"]: h for h in query_hits(project_id, file_ids, case_ids)}
+    hit_map = _build_hit_map(query_hits(project_id, file_ids, case_ids))
+    if project_id and len(hit_map) == 0:
+        log.fatal("No MAF files found for {}.".format(project_id))
 
+    # At this point we only have a case_id or file_id, and no extra information
+    # from the /files endpoint. That means for every missing id we can only fill
+    # out one of the two id columns in the fail tsv report.
+    if case_ids:
+        check_for_missing_ids(hit_map, case_ids, "case_id")
+
+    if file_ids:
+        check_for_missing_ids(hit_map, file_ids, "file_id")
+
+    return _select_mafs(hit_map, token)
+
+
+def check_for_missing_ids(
+    hit_map: Dict[str, Dict], expected_uuids: List[str], hit_key: str,
+):
+    """For a list of ids check to see if they exist in the hit_map generated from the /files endpoint
+
+    If there's a difference between what was requested and what was received then
+    warn the user and write the failed uuids to a TSV. The TSV file should consist
+    of the uuid (case_id or file_id) in it's respective column and the reason
+    why it failed to download.
+    """
+    found_uuids = {h[hit_key] for h in hit_map.values()}
+
+    if set(expected_uuids) != found_uuids:
+        failed_uuids = set(expected_uuids) - found_uuids
+        write_failed_download_manifest(
+            failed_list=[
+                {hit_key: uuid, "reason": "{} not found".format(hit_key)}
+                for uuid in failed_uuids
+            ],
+        )
+        logger.warning(
+            "Unable to find information for these {}s: {}".format(
+                hit_key, ", ".join(failed_uuids)
+            )
+        )
+
+
+def _build_hit_map(hits):
+    return {h["file_id"]: h for h in hits}
+
+
+def _select_mafs(hit_map, token):
+    mafs = []
     only_one_project_id(hit_map)
 
     criteria = collect_criteria(hit_map)
     selections = select_primary_aliquots(criteria)
 
-    for case_id, primary_aliquot in selections.items():
-        hit = hit_map[case_id]
+    for primary_aliquot in selections.values():
+        hit = hit_map[primary_aliquot.id]
         sample_id = hit["samples"][primary_aliquot.sample_id]["aliquot_submitter_id"]
 
-        # TODO: Replace with delayed download solution
-        maf_file_contents = download_maf(
-            primary_aliquot.id, md5sum=hit["md5sum"], token=token,
+        deferred_maf = download_maf(
+            hit["case_id"], primary_aliquot.id, md5sum=hit["md5sum"], token=token,
         )
         mafs.append(
-            AliquotLevelMaf(
-                file=maf_file_contents, tumor_aliquot_submitter_id=sample_id,
-            )
+            AliquotLevelMaf(file=deferred_maf, tumor_aliquot_submitter_id=sample_id,)
         )
-    # TODO: Return list of delayed download maf objects
+
     return mafs
+
+
+def write_failed_download_manifest(failed_list: List[Dict[str, str]]) -> None:
+    logger.warning("Writing failed download ids to file: %s", FAILED_DOWNLOAD_FILENAME)
+
+    fieldnames = ["case_id", "file_id", "reason"]
+    with open(FAILED_DOWNLOAD_FILENAME, "a") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames, delimiter="\t")
+        # Only write the headers if there's nothing in the file yet.
+        if os.stat(FAILED_DOWNLOAD_FILENAME).st_size == 0:
+            writer.writeheader()
+        writer.writerows(failed_list)

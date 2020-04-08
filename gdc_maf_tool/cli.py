@@ -1,15 +1,16 @@
 import argparse
-import csv
 from typing import List
 
 from aliquot_level_maf.aggregation import aggregate_mafs
+from defusedcsv import csv
 
-from gdc_maf_tool import gdc_api_client, log
+from gdc_maf_tool import __version__, gdc_api_client, log
+from gdc_maf_tool.log import logger
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="----GDC MAF Concatenation Tool v1.0----",
+        description="----GDC MAF Concatenation Tool v{}----".format(__version__),
     )
     # Must pick a project-id, case-manifest, or file-manifest
     group = parser.add_mutually_exclusive_group(required=True)
@@ -39,8 +40,8 @@ def parse_args() -> argparse.Namespace:
         "-o",
         "--output",
         dest="output_filename",
-        default="outfile.gz",
-        help="Output file name for the resulting aggregate MAF.",
+        default="outfile.maf.gz",
+        help="Output file name for the resulting aggregate MAF (default: outfile.maf.gz).",
     )
     return parser.parse_args()
 
@@ -79,3 +80,25 @@ def main() -> None:
 
     with open(args.output_filename, "wb") as f:
         aggregate_mafs(mafs, f)
+
+    failed_downloads = [
+        {
+            "case_id": m.file.case_id,
+            "file_id": m.file.uuid,
+            "reason": m.file.failed_reason,
+        }
+        for m in mafs
+        if m.file.failed_reason
+    ]
+    if failed_downloads:
+        logger.warning(
+            "There are %d failed downloads. Please check %s for details",
+            len(failed_downloads),
+            gdc_api_client.FAILED_DOWNLOAD_FILENAME,
+        )
+        gdc_api_client.write_failed_download_manifest(failed_list=failed_downloads)
+    logger.info("Successfully downloaded %s files", len(mafs) - len(failed_downloads))
+
+
+if __name__ == "__main__":
+    main()
