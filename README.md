@@ -1,4 +1,22 @@
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
+
+---
+
 # gdc-maf-tool
+
+- [gdc-maf-tool](#gdc-maf-tool)
+  - [Aggregate GDC MAFs into one MAF file](#aggregate-gdc-mafs-into-one-maf-file)
+    - [Querying for MAFs](#querying-for-mafs)
+    - [Querying for Cases](#querying-for-cases)
+    - [Known Issues](#known-issues)
+  - [Installing](#installing)
+      - [Clone the repo:](#clone-the-repo)
+      - [Create a virtualenv:](#create-a-virtualenv)
+      - [Install the tool in the virtualenv:](#install-the-tool-in-the-virtualenv)
+  - [Usage](#usage)
+  - [Testing](#testing)
+  - [Install `pre-commit`](#install-pre-commit)
+  - [Contributing](#contributing)
 
 ## Aggregate GDC MAFs into one MAF file
 
@@ -111,13 +129,18 @@ Testing
 $ tox
 ```
 
-Contributing
+Install `pre-commit`
 ---
 
-We use `pre-commit` to enforce formatting and linting.  It needs to be installed
-in your local copy of this repo.
+We use `pre-commit` to enforce formatting, linting and secrets detecting.  
+It needs to be installed in your local copy of this repo.
 
 ```
 pip install -r dev-requirements.txt
 pre-commit install
 ```
+
+Contributing
+---
+
+Read how to contribute [here](https://github.com/NCI-GDC/portal-ui/blob/develop/CONTRIBUTING.md)
