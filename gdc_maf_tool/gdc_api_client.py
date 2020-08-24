@@ -163,7 +163,9 @@ def only_one_project_id(hit_map: Dict) -> None:
         )
 
 
-def collect_criteria(hit_map: Dict) -> List[PrimaryAliquotSelectionCriterion]:
+def collect_criteria(
+    hit_map: Dict, entity: str
+) -> List[PrimaryAliquotSelectionCriterion]:
     criteria = []
     for hit in hit_map.values():
         sample_criteria = [
@@ -177,7 +179,7 @@ def collect_criteria(hit_map: Dict) -> List[PrimaryAliquotSelectionCriterion]:
             PrimaryAliquotSelectionCriterion(
                 id=hit["file_id"],
                 samples=sample_criteria,
-                case_id=hit["case_id"],
+                entity_id=hit[entity],
                 maf_creation_date=hit["created_datetime"],
             )
         )
@@ -185,7 +187,11 @@ def collect_criteria(hit_map: Dict) -> List[PrimaryAliquotSelectionCriterion]:
 
 
 def collect_mafs(
-    project_id: str, case_ids: List[str], file_ids: List[str], token: Optional[str]
+    project_id: str,
+    disable_aliquot_selection: bool,
+    case_ids: List[str],
+    file_ids: List[str],
+    token: Optional[str],
 ) -> List[AliquotLevelMaf]:
     """Put together a list of mafs given one of: project_id, case_ids, file_ids.
 
@@ -209,7 +215,7 @@ def collect_mafs(
     if file_ids:
         check_for_missing_ids(hit_map, file_ids, "file_id")
 
-    return _select_mafs(hit_map, token)
+    return _select_mafs(hit_map, token, disable_aliquot_selection)
 
 
 def check_for_missing_ids(
@@ -243,11 +249,14 @@ def _build_hit_map(hits):
     return {h["file_id"]: h for h in hits}
 
 
-def _select_mafs(hit_map, token):
+def _select_mafs(hit_map, token, disable_aliquot_selection):
     mafs = []
     only_one_project_id(hit_map)
 
-    criteria = collect_criteria(hit_map)
+    # if disable_aliquot_selection is set, perfrorm primary aliquot selection per file
+    # else perform primary aliquot selection per case
+    entity = "file_id" if disable_aliquot_selection else "case_id"
+    criteria = collect_criteria(hit_map, entity)
     selections = select_primary_aliquots(criteria)
 
     for primary_aliquot in selections.values():
