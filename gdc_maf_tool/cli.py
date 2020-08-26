@@ -47,10 +47,13 @@ def parse_args() -> argparse.Namespace:
         ),
     )
     parser.add_argument(
-        "-d",
-        "--disable-aliquot-selection",
+        "-a",
+        "--all-files",
         action="store_true",
-        help="Disable primary aliquot selection logic",
+        help=(
+            "Include all aliquot-level MAF files. Will perform primary aliquot"
+            " selection per file"
+        ),
     )
     return parser.parse_args()
 
@@ -86,7 +89,7 @@ def main() -> None:
         file_ids = ids_from_manifest(args.file_manifest)
 
     mafs = gdc_api_client.collect_mafs(
-        args.project_id, args.disable_aliquot_selection, case_ids, file_ids, token
+        args.project_id, args.all_files, case_ids, file_ids, token
     )
 
     with open(args.output_filename, "wb") as f:

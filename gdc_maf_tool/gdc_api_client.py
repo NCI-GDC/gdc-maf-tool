@@ -188,7 +188,7 @@ def collect_criteria(
 
 def collect_mafs(
     project_id: str,
-    disable_aliquot_selection: bool,
+    include_all_files: bool,
     case_ids: List[str],
     file_ids: List[str],
     token: Optional[str],
@@ -215,7 +215,7 @@ def collect_mafs(
     if file_ids:
         check_for_missing_ids(hit_map, file_ids, "file_id")
 
-    return _select_mafs(hit_map, token, disable_aliquot_selection)
+    return _select_mafs(hit_map, token, include_all_files)
 
 
 def check_for_missing_ids(
@@ -249,13 +249,13 @@ def _build_hit_map(hits):
     return {h["file_id"]: h for h in hits}
 
 
-def _select_mafs(hit_map, token, disable_aliquot_selection):
+def _select_mafs(hit_map, token, include_all_files):
     mafs = []
     only_one_project_id(hit_map)
 
-    # if disable_aliquot_selection is set, perfrorm primary aliquot selection per file
+    # if include_all_files is set, perfrorm primary aliquot selection per file
     # else perform primary aliquot selection per case
-    entity = "file_id" if disable_aliquot_selection else "case_id"
+    entity = "file_id" if include_all_files else "case_id"
     criteria = collect_criteria(hit_map, entity)
     selections = select_primary_aliquots(criteria)
 

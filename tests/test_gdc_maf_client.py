@@ -123,7 +123,7 @@ results = {
 }
 
 
-def test__select_mafs():
+def test__select_mafs_per_case():
     with HTTMock(mocks.download_mock):
         mafs = _select_mafs(
             _build_hit_map([_parse_hit(hit) for hit in results["data"]["hits"]]),
@@ -134,7 +134,7 @@ def test__select_mafs():
     assert mafs[0].tumor_aliquot_submitter_id == "TARGET-20-PANLRE-09A-01D"
 
 
-def test__select_mafs_disable_primary_aliquot():
+def test__select_mafs_per_file():
     with HTTMock(mocks.download_mock):
         mafs = _select_mafs(
             _build_hit_map([_parse_hit(hit) for hit in results["data"]["hits"]]),
