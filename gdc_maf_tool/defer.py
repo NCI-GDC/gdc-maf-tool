@@ -41,17 +41,17 @@ class DeferredRequestReader(io.BufferedIOBase):
 
         response = self._provider()
         if response.status_code == 403:
-            logger.warn("[403] Unable to downoad %s. Skipping...", self.uuid)
+            logger.warning("[403] Unable to downoad %s. Skipping...", self.uuid)
             self.failed_reason = "Not authorized"
             return
 
         if response.status_code == 404:
-            logger.warn("[404] File not found %s. Skipping...", self.uuid)
+            logger.warning("[404] File not found %s. Skipping...", self.uuid)
             self.failed_reason = "File not found"
             return
 
         if response.status_code != 200:
-            logger.warn(
+            logger.warning(
                 "[%s] Uncaught error %s. Skipping...", response.status_code, self.uuid
             )
             self.failed_reason = "Uncaught error code: {}".format(response.status_code)

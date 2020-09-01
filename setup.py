@@ -12,6 +12,6 @@ setup(
         "requests>=2.22.0,<3",
         "defusedcsv>=1.0.0,<2.0.0",
         "cdislogging@git+https://github.com/uc-cdis/cdislogging.git@0.0.2",
-        "aliquot_level_maf@git+https://github.com/NCI-GDC/aliquot-level-maf.git@0.2.1",
+        "aliquot_level_maf@git+https://github.com/NCI-GDC/aliquot-level-maf.git@0.2.2",
     ],
 )

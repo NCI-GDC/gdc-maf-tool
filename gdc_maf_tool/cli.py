@@ -41,7 +41,19 @@ def parse_args() -> argparse.Namespace:
         "--output",
         dest="output_filename",
         default="outfile.maf.gz",
-        help="Output file name for the resulting aggregate MAF (default: outfile.maf.gz).",
+        help=(
+            "Output file name for the resulting aggregate MAF (default:"
+            " outfile.maf.gz)."
+        ),
+    )
+    parser.add_argument(
+        "-a",
+        "--all-files",
+        action="store_true",
+        help=(
+            "Include all aliquot-level MAF files. Will perform primary aliquot"
+            " selection per file"
+        ),
     )
     return parser.parse_args()
 
@@ -76,7 +88,9 @@ def main() -> None:
     elif args.file_manifest:
         file_ids = ids_from_manifest(args.file_manifest)
 
-    mafs = gdc_api_client.collect_mafs(args.project_id, case_ids, file_ids, token)
+    mafs = gdc_api_client.collect_mafs(
+        args.project_id, args.all_files, case_ids, file_ids, token
+    )
 
     with open(args.output_filename, "wb") as f:
         aggregate_mafs(mafs, f)
