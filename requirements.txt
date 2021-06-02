@@ -11,4 +11,4 @@ chardet==3.0.4            # via requests
 defusedcsv==1.1.0         # via gdc-maf-tool (setup.py)
 idna==2.9                 # via requests
 requests==2.23.0          # via gdc-maf-tool (setup.py)
-urllib3==1.25.8           # via requests
+urllib3==1.26.5           # via requests
