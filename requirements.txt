@@ -6,7 +6,7 @@
 #
 git+https://github.com/NCI-GDC/aliquot-level-maf.git@0.2.1  # via gdc-maf-tool (setup.py)
 git+https://github.com/uc-cdis/cdislogging.git@0.0.2  # via gdc-maf-tool (setup.py)
-certifi==2020.4.5.1       # via requests
+certifi==2022.12.7       # via requests
 chardet==3.0.4            # via requests
 defusedcsv==1.1.0         # via gdc-maf-tool (setup.py)
 idna==2.9                 # via requests
