@@ -147,13 +147,16 @@ def download_maf(
             headers = {"X-Auth-Token": token}
 
         logger.info("Downloading File: %s ", uuid)
-        return requests.get(f"https://api.gdc.cancer.gov/data/{uuid}", headers=headers,)
+        return requests.get(
+            f"https://api.gdc.cancer.gov/data/{uuid}",
+            headers=headers,
+        )
 
     return defer.DeferredRequestReader(provider, case_id, uuid, md5sum)
 
 
 def only_one_project_id(hit_map: Dict) -> None:
-    """ Confirm that there's only one project_id in the list of hits."""
+    """Confirm that there's only one project_id in the list of hits."""
     project_ids = {h["project_id"] for h in hit_map.values()}
     if len(project_ids) > 1:
         log.fatal(
@@ -219,7 +222,9 @@ def collect_mafs(
 
 
 def check_for_missing_ids(
-    hit_map: Dict[str, Dict], expected_uuids: List[str], hit_key: str,
+    hit_map: Dict[str, Dict],
+    expected_uuids: List[str],
+    hit_key: str,
 ):
     """For a list of ids check to see if they exist in the hit_map generated from the /files endpoint
 
@@ -264,10 +269,16 @@ def _select_mafs(hit_map, token, include_all_files):
         sample_id = hit["samples"][primary_aliquot.sample_id]["aliquot_submitter_id"]
 
         deferred_maf = download_maf(
-            hit["case_id"], primary_aliquot.id, md5sum=hit["md5sum"], token=token,
+            hit["case_id"],
+            primary_aliquot.id,
+            md5sum=hit["md5sum"],
+            token=token,
         )
         mafs.append(
-            AliquotLevelMaf(file=deferred_maf, tumor_aliquot_submitter_id=sample_id,)
+            AliquotLevelMaf(
+                file=deferred_maf,
+                tumor_aliquot_submitter_id=sample_id,
+            )
         )
 
     return mafs

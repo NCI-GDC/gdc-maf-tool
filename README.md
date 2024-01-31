@@ -133,7 +133,7 @@ $ tox
 Install `pre-commit`
 ---
 
-We use `pre-commit` to enforce formatting, linting and secrets detecting.  
+We use `pre-commit` to enforce formatting, linting and secrets detecting.
 It needs to be installed in your local copy of this repo.
 
 ```
@@ -150,7 +150,7 @@ To update the .secrets.baseline file run
 detect-secrets scan --update .secrets.baseline
 ```
 
-`.secrets.baseline` contains all the string that were caught by detect-secrets but are not stored in plain text. Audit the baseline to view the secrets . 
+`.secrets.baseline` contains all the string that were caught by detect-secrets but are not stored in plain text. Audit the baseline to view the secrets .
 
 ```
 detect-secrets audit .secrets.baseline
