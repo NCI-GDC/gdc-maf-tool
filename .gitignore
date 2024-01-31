@@ -133,3 +133,5 @@ dmypy.json
 
 *.tsv
 *.maf.gz
+
+.idea
