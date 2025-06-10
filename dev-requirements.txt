@@ -38,7 +38,7 @@ pytest-threadleak==0.2.0  # via -r dev-requirements.in
 pytest==4.6.6             # via -r dev-requirements.in, pytest-cov, pytest-threadleak
 pyyaml==5.3.1             # via bandit, pre-commit
 regex==2020.2.20          # via black
-requests==2.23.0          # via -c requirements.txt, httmock
+requests==2.32.4          # via -c requirements.txt, httmock
 six==1.14.0               # via bandit, mock, packaging, pip-tools, pytest, stevedore, virtualenv
 smmap==3.0.1              # via gitdb
 stevedore==1.32.0         # via bandit
